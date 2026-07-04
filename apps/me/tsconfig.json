@@ -1,0 +1,17 @@
+{
+  "extends": "@mrerr/typescript-config/react.json",
+  "compilerOptions": {
+    "types": ["@react-router/node", "vite/client"],
+    "paths": {
+      "~/*": ["./app/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/.server/**/*.ts",
+    "**/.server/**/*.tsx",
+    "**/.client/**/*.ts",
+    "**/.client/**/*.tsx"
+  ]
+}

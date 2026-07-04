@@ -1,0 +1,10 @@
+{
+  "name": "@mrerr/utils",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "devDependencies": {
+    "@mrerr/typescript-config": "workspace:*",
+    "typescript": "^5.0.0"
+  }
+}

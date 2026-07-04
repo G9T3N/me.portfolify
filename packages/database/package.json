@@ -1,0 +1,16 @@
+{
+  "name": "@mrerr/database",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "drizzle-orm": "^0.30.10",
+    "postgres": "^3.4.4"
+  },
+  "devDependencies": {
+    "@mrerr/typescript-config": "workspace:*",
+    "@mrerr/env": "workspace:*",
+    "drizzle-kit": "^0.20.18",
+    "typescript": "^5.0.0"
+  }
+}
