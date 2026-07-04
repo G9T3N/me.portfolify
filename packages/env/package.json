@@ -1,0 +1,13 @@
+{
+  "name": "@mrerr/env",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@mrerr/typescript-config": "workspace:*",
+    "typescript": "^5.0.0"
+  }
+}

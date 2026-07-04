@@ -1,0 +1,9 @@
+@theme {
+  --color-primary: #000000;
+  --color-secondary: #ffffff;
+}
+
+@import "./typography.css";
+@import "./spacing.css";
+@import "./utilities.css";
+@import "./motion.css";

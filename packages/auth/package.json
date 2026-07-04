@@ -1,0 +1,15 @@
+{
+  "name": "@mrerr/auth",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "better-auth": "^0.1.0",
+    "@mrerr/database": "workspace:*",
+    "@mrerr/env": "workspace:*"
+  },
+  "devDependencies": {
+    "@mrerr/typescript-config": "workspace:*",
+    "typescript": "^5.0.0"
+  }
+}

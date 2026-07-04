@@ -1,0 +1,14 @@
+{
+  "name": "@mrerr/hooks",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@mrerr/typescript-config": "workspace:*",
+    "@types/react": "^18.3.1",
+    "typescript": "^5.0.0"
+  }
+}
