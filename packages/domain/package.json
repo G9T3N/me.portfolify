@@ -12,6 +12,9 @@
     "arktype": "^2.2.2"
   },
   "devDependencies": {
+    "@mrerr/eslint-config": "workspace:*",
+    "@mrerr/typescript-config": "workspace:*",
+    "eslint": "^8.57.1",
     "typescript": "^5.0.0"
   }
 }

@@ -1,4 +1,5 @@
 import { type } from "arktype";
+
 import { ARTICLE_STATUSES } from "./constants";
 
 export const articleSchema = type({

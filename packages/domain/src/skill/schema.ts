@@ -1,4 +1,5 @@
 import { type } from "arktype";
+
 import { SKILL_CATEGORIES, PROFICIENCY_LEVELS } from "./constants";
 
 export const skillSchema = type({

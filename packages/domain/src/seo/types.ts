@@ -1,4 +1,3 @@
-import { type Type } from "arktype";
-import { seoSchema } from "./schema";
+import { type seoSchema } from "./schema";
 
 export type Seo = typeof seoSchema.infer;

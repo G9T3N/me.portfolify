@@ -1,4 +1,5 @@
 import { type } from "arktype";
+
 import { PROJECT_STATUSES } from "./constants";
 
 export const projectSchema = type({

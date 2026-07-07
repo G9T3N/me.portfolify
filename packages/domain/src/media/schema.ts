@@ -1,4 +1,5 @@
 import { type } from "arktype";
+
 import { MEDIA_TYPES } from "./constants";
 
 export const mediaSchema = type({

@@ -1,4 +1,5 @@
 import { type } from "arktype";
+
 import { AVAILABILITY_STATUSES } from "./constants";
 
 export const profileSchema = type({

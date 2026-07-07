@@ -1,4 +1,5 @@
 import { type } from "arktype";
+
 import { EMPLOYMENT_TYPES } from "./constants";
 
 export const experienceSchema = type({

@@ -1,4 +1,3 @@
-import { type Type } from "arktype";
-import { mediaSchema } from "./schema";
+import { type mediaSchema } from "./schema";
 
 export type Media = typeof mediaSchema.infer;

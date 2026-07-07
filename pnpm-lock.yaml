@@ -42,7 +42,7 @@ importers:
         specifier: ^9.1.0
         version: 9.1.2(eslint@8.57.1)
       eslint-plugin-import:
-        specifier: ^2.29.1
+        specifier: ^2.32.0
         version: 2.32.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@6.0.3))(eslint@8.57.1)
       eslint-plugin-jsx-a11y:
         specifier: ^6.8.0
@@ -337,6 +337,15 @@ importers:
         specifier: ^2.2.2
         version: 2.2.2
     devDependencies:
+      "@mrerr/eslint-config":
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      "@mrerr/typescript-config":
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      eslint:
+        specifier: ^8.57.1
+        version: 8.57.1
       typescript:
         specifier: ^5.0.0
         version: 5.9.3

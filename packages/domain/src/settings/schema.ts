@@ -1,4 +1,5 @@
 import { type } from "arktype";
+
 import { THEME_MODES } from "./constants";
 
 export const settingsSchema = type({

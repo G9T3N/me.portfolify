@@ -1,4 +1,5 @@
 import { type } from "arktype";
+
 import { SOCIAL_PLATFORMS } from "./constants";
 
 export const socialLinkSchema = type({

@@ -1,4 +1,5 @@
 import { type } from "arktype";
+
 import { NAVIGATION_TARGETS } from "./constants";
 
 export const navigationSchema = type({
