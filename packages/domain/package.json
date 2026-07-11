@@ -1,0 +1,18 @@
+{
+  "name": "@mrerr/domain",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "lint": "eslint \"src/**/*.ts*\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "arktype": "^2.2.2"
+  },
+  "devDependencies": {
+    "@mrerr/eslint-config": "workspace:*",
+    "@mrerr/typescript-config": "workspace:*",
+    "eslint": "^8.57.1",
+    "typescript": "^5.0.0"
+  }
+}
