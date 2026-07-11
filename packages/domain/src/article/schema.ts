@@ -8,7 +8,9 @@ export const articleSchema = type({
   excerpt: "string",
   content: "string",
   coverImage: "string.url | null",
-  status: type.enumerated(...ARTICLE_STATUSES),
+  status: type("string").narrow((s: string): s is (typeof ARTICLE_STATUSES)[number] =>
+    ARTICLE_STATUSES.includes(s as any),
+  ),
   tags: "string[]",
   publishedAt: "Date | null",
   createdAt: "Date",
