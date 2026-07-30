@@ -8,3 +8,4 @@ export * as SEO from "./seo";
 export * as Navigation from "./navigation";
 export * as Social from "./social";
 export * as Settings from "./settings";
+export * as Core from "./core";
