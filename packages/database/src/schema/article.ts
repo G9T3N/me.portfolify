@@ -22,12 +22,20 @@ export const tagTable = pgTable("tags", {
   slug: text("slug").notNull().unique(),
 });
 
-export const articleTagsTable = pgTable("article_tags", {
-  articleId: uuid("article_id").notNull().references(() => articleTable.id, { onDelete: "cascade" }),
-  tagId: uuid("tag_id").notNull().references(() => tagTable.id, { onDelete: "cascade" }),
-}, (t) => ({
-  pk: primaryKey({ columns: [t.articleId, t.tagId] }),
-}));
+export const articleTagsTable = pgTable(
+  "article_tags",
+  {
+    articleId: uuid("article_id")
+      .notNull()
+      .references(() => articleTable.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => tagTable.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.articleId, t.tagId] }),
+  }),
+);
 
 export const articleRelations = relations(articleTable, ({ many }) => ({
   articleTags: many(articleTagsTable),

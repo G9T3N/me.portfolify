@@ -1,6 +1,6 @@
 import { reactRouter } from "@react-router/dev/vite";
 import { defineConfig, mergeConfig, type UserConfig } from "vite";
-import { getBaseConfig } from "./base";
+import { getBaseConfig } from "./base.ts";
 
 export const getReactRouterConfig = (config?: UserConfig): UserConfig => {
   return mergeConfig(

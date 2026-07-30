@@ -36,7 +36,7 @@ describe("ProjectRepository", () => {
       isPublished: false,
       publishedAt: null,
       repository: null,
-      demo: null
+      demo: null,
     });
 
     expect(proj).toBeDefined();
@@ -52,43 +52,48 @@ describe("ProjectRepository", () => {
   });
 
   it("should enforce validation through ArkType on creation", async () => {
-    await expect(repo.create({
-      title: "", // Invalid: length must be > 0
-      slug: "invalid-project",
-      summary: "A test project",
-      description: "Description of test project",
-      status: "draft",
-      featured: false,
-      images: [],
-      technologies: [],
-      isPublished: false,
-      publishedAt: null,
-      repository: null,
-      demo: null
-    })).rejects.toThrow(ValidationFailureError);
+    await expect(
+      repo.create({
+        title: "", // Invalid: length must be > 0
+        slug: "invalid-project",
+        summary: "A test project",
+        description: "Description of test project",
+        status: "draft",
+        featured: false,
+        images: [],
+        technologies: [],
+        isPublished: false,
+        publishedAt: null,
+        repository: null,
+        demo: null,
+      }),
+    ).rejects.toThrow(ValidationFailureError);
   });
 
   it("should throw DuplicateError on slug collision", async () => {
     // Rely on earlier inserted "test-project"
-    await expect(repo.create({
-      title: "Another Test Project",
-      slug: "test-project", // Duplicate slug
-      summary: "A test project",
-      description: "Description of test project",
-      status: "draft",
-      featured: false,
-      images: [],
-      technologies: [],
-      isPublished: false,
-      publishedAt: null,
-      repository: null,
-      demo: null
-    })).rejects.toThrow(DuplicateError);
+    await expect(
+      repo.create({
+        title: "Another Test Project",
+        slug: "test-project", // Duplicate slug
+        summary: "A test project",
+        description: "Description of test project",
+        status: "draft",
+        featured: false,
+        images: [],
+        technologies: [],
+        isPublished: false,
+        publishedAt: null,
+        repository: null,
+        demo: null,
+      }),
+    ).rejects.toThrow(DuplicateError);
   });
 
   it("should throw NotFoundError when updating non-existent project", async () => {
-    await expect(repo.update("00000000-0000-0000-0000-000000000000", { title: "New" }))
-      .rejects.toThrow(NotFoundError);
+    await expect(
+      repo.update("00000000-0000-0000-0000-000000000000", { title: "New" }),
+    ).rejects.toThrow(NotFoundError);
   });
 
   it("should write relationships atomically in transaction", async () => {
@@ -104,17 +109,23 @@ describe("ProjectRepository", () => {
       isPublished: false,
       publishedAt: null,
       repository: null,
-      demo: null
+      demo: null,
     });
 
-    const [tech] = await db.insert(technologyTable).values({
-      name: "Jest",
-      slug: "jest"
-    }).returning();
+    const [tech] = await db
+      .insert(technologyTable)
+      .values({
+        name: "Jest",
+        slug: "jest",
+      })
+      .returning();
 
     await repo.setTechnologies(proj.id, [tech.id]);
 
-    const relations = await db.select().from(projectTechnologiesTable).where(eq(projectTechnologiesTable.projectId, proj.id));
+    const relations = await db
+      .select()
+      .from(projectTechnologiesTable)
+      .where(eq(projectTechnologiesTable.projectId, proj.id));
     expect(relations.length).toBe(1);
     expect(relations[0].technologyId).toBe(tech.id);
   });

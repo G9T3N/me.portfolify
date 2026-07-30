@@ -13,6 +13,7 @@
   "dependencies": {
     "drizzle-orm": "^0.30.10",
     "postgres": "^3.4.4",
+    "arktype": "^2.2.2",
     "@mrerr/env": "workspace:*",
     "@mrerr/domain": "workspace:*"
   },

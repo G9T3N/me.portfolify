@@ -1,11 +1,13 @@
 # Database Schema
 
 The database relies heavily on the `BaseEntity` from the Domain Layer:
+
 - `id` (UUID, primary key)
 - `createdAt` (Timestamp)
 - `updatedAt` (Timestamp)
 
 And for `PublishableEntity`:
+
 - `isPublished` (boolean)
 - `publishedAt` (Timestamp, nullable)
 
@@ -21,4 +23,4 @@ And for `PublishableEntity`:
 - `seo`: Global and fallback SEO defaults.
 - `settings`: Application configuration.
 
-*Join tables and value objects map strictly to Domain representations.*
+_Join tables and value objects map strictly to Domain representations._
