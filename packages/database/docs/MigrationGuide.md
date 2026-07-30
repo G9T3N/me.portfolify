@@ -15,4 +15,4 @@ We use Drizzle Kit to manage our PostgreSQL schema migrations.
    pnpm --filter @mrerr/database migrate
    ```
 
-*Note: Migrations should always be applied before running the application or tests.*
+_Note: Migrations should always be applied before running the application or tests._
