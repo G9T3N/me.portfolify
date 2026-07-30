@@ -1,19 +1,20 @@
 import { type } from "arktype";
+import { BaseEntity, Url } from "../core";
 
-export const seoSchema = type({
+export const seoSchema = BaseEntity.and(type({
   title: "string > 0",
   description: "string",
-  canonical: "string.url | null",
+  canonical: Url.or("null"),
   openGraph: type({
     title: "string | null",
     description: "string | null",
-    image: "string.url | null",
+    image: Url.or("null"),
     type: "string | null",
   }),
   twitter: type({
     card: "string | null",
     title: "string | null",
     description: "string | null",
-    image: "string.url | null",
+    image: Url.or("null"),
   }),
-});
+}));
