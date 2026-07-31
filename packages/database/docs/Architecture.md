@@ -3,7 +3,7 @@
 ## Principles
 
 1. **Domain Over Database:** The Domain Layer (`@mrerr/domain`) is the ultimate source of truth. The database schema perfectly mirrors the domain schema.
-2. **Encapsulation:** The rest of the platform interacts only with Repositories and Queries. It has no knowledge of Drizzle or PostgreSQL specific implementations.
+2. **Encapsulation:** The rest of the platform interacts only with Repositories and Queries. It has no knowledge of Drizzle or PostgreSQL-specific implementations.
 3. **Runtime Validation:** Repositories use ArkType schemas to validate objects being saved to or retrieved from the database, protecting against corrupted data or mismatched shapes.
 4. **Normalized Relationships:** Meaningful relations (e.g., Projects <-> Technologies) are fully normalized using Drizzle relations and join tables. Simple value objects (like `Experience.highlights`) use `text[]` columns to avoid unnecessary complexity.
 
