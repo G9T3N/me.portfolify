@@ -1,4 +1,4 @@
-import { defineConfig, type UserConfig } from "vite";
+import { type UserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export const getBaseConfig = (): UserConfig => ({
