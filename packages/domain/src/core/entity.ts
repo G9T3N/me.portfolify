@@ -8,6 +8,12 @@ export const BaseEntity = type({
 });
 
 export const PublishableEntity = type({
-  isPublished: "boolean",
-  publishedAt: "Date | null",
+  "isPublished": "boolean",
+  "publishedAt": "Date | null",
+}).narrow((entity): entity is { isPublished: boolean; publishedAt: Date | null } => {
+  // When published, publishedAt must be a Date (not null)
+  if (entity.isPublished && entity.publishedAt === null) {
+    return false;
+  }
+  return true;
 });
