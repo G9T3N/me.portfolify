@@ -3,7 +3,7 @@ import { articleTable, articleTagsTable } from "../schema/article";
 import { eq } from "drizzle-orm";
 import { Article } from "@mrerr/domain";
 import { PublishableRepository } from "./base";
-import { NotFoundError, ValidationFailureError, handlePostgresError } from "./errors";
+import { NotFoundError, mapValidationError, handlePostgresError } from "./errors";
 import { articleSchema } from "@mrerr/domain/src/article/schema";
 
 export class ArticleRepository implements PublishableRepository<
@@ -12,9 +12,14 @@ export class ArticleRepository implements PublishableRepository<
   Partial<Omit<Article.Article, "id" | "createdAt" | "updatedAt">>
 > {
   private validate(data: unknown): Article.Article {
-    const result = articleSchema(data);
+    // Supply the missing tags field before validation
+    const candidate = {
+      ...data,
+      tags: [],
+    };
+    const result = articleSchema(candidate);
     if (result instanceof Error) {
-      throw new ValidationFailureError("Invalid article data", result.message);
+      throw mapValidationError(result, "database-to-domain", "Article");
     }
     return result as Article.Article;
   }
@@ -80,7 +85,18 @@ export class ArticleRepository implements PublishableRepository<
     data: Partial<Omit<Article.Article, "id" | "createdAt" | "updatedAt">>,
   ): Promise<Article.Article> {
     try {
-      const updateData = { ...data, updatedAt: new Date() } as any;
+      // Build updateData from only fields defined by articleTable
+      const updateData: Partial<typeof articleTable.$inferInsert> = {
+        updatedAt: new Date(),
+      };
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.slug !== undefined) updateData.slug = data.slug;
+      if (data.excerpt !== undefined) updateData.excerpt = data.excerpt;
+      if (data.content !== undefined) updateData.content = data.content;
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.coverImage !== undefined) updateData.coverImage = data.coverImage;
+      if (data.isPublished !== undefined) updateData.isPublished = data.isPublished;
+      if (data.publishedAt !== undefined) updateData.publishedAt = data.publishedAt ? new Date(data.publishedAt) : null;
 
       const [row] = await db
         .update(articleTable)

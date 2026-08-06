@@ -3,7 +3,7 @@ import { projectTable, projectTechnologiesTable } from "../schema/project";
 import { eq } from "drizzle-orm";
 import { Project } from "@mrerr/domain";
 import { PublishableRepository } from "./base";
-import { NotFoundError, ValidationFailureError, handlePostgresError } from "./errors";
+import { NotFoundError, mapValidationError, handlePostgresError } from "./errors";
 import { projectSchema } from "@mrerr/domain/src/project/schema";
 
 export class ProjectRepository implements PublishableRepository<
@@ -12,9 +12,14 @@ export class ProjectRepository implements PublishableRepository<
   Partial<Omit<Project.Project, "id" | "createdAt" | "updatedAt">>
 > {
   private validate(data: unknown): Project.Project {
-    const result = projectSchema(data);
+    // Supply the missing technologies field before validation
+    const candidate = {
+      ...data,
+      technologies: [],
+    };
+    const result = projectSchema(candidate);
     if (result instanceof Error) {
-      throw new ValidationFailureError("Invalid project data", result.message);
+      throw mapValidationError(result, "database-to-domain", "Project");
     }
     return result as Project.Project;
   }
@@ -83,7 +88,21 @@ export class ProjectRepository implements PublishableRepository<
     data: Partial<Omit<Project.Project, "id" | "createdAt" | "updatedAt">>,
   ): Promise<Project.Project> {
     try {
-      const updateData = { ...data, updatedAt: new Date() } as any;
+      // Build updateData from only fields defined by projectTable
+      const updateData: Partial<typeof projectTable.$inferInsert> = {
+        updatedAt: new Date(),
+      };
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.slug !== undefined) updateData.slug = data.slug;
+      if (data.summary !== undefined) updateData.summary = data.summary;
+      if (data.description !== undefined) updateData.description = data.description;
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.repository !== undefined) updateData.repository = data.repository;
+      if (data.demo !== undefined) updateData.demo = data.demo;
+      if (data.images !== undefined) updateData.images = data.images as string[];
+      if (data.featured !== undefined) updateData.featured = data.featured;
+      if (data.isPublished !== undefined) updateData.isPublished = data.isPublished;
+      if (data.publishedAt !== undefined) updateData.publishedAt = data.publishedAt ? new Date(data.publishedAt) : null;
 
       const [row] = await db
         .update(projectTable)

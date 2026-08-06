@@ -26,7 +26,7 @@ async function seed() {
     profileId = newProfile.id;
   }
 
-  // Idempotent Social Links (FIXED: removed the duplicate unconditional insert statement)
+  // Idempotent Social Links
   console.log("Seeding social links...");
   const socials = [
     { platform: "github", url: "https://github.com/johndoe", label: "GitHub" },
@@ -36,16 +36,7 @@ async function seed() {
     await db
       .insert(socialLinkTable)
       .values({ profileId, ...social })
-      .onConflictDoNothing(); // Depends on a unique constraint, but without it we must select
-
-    // Without unique constraint on URL, we manually check:
-    const existing = await db
-      .select()
-      .from(socialLinkTable)
-      .where(eq(socialLinkTable.url, social.url));
-    if (existing.length === 0) {
-      await db.insert(socialLinkTable).values({ profileId, ...social });
-    }
+      .onConflictDoNothing();
   }
 
   // Idempotent Technologies
