@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS "projects" (
 	"description" text NOT NULL,
 	"repository" text,
 	"demo" text,
-	"images" text[] DEFAULT  NOT NULL,
+	"images" text[] DEFAULT '{}'::text[] NOT NULL,
 	"featured" boolean DEFAULT false NOT NULL,
 	"status" text NOT NULL,
 	"is_published" boolean DEFAULT false NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS "experience" (
 	"start_date" timestamp NOT NULL,
 	"end_date" timestamp,
 	"location" text NOT NULL,
-	"highlights" text[] DEFAULT  NOT NULL,
+	"highlights" text[] DEFAULT '{}'::text[] NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -110,7 +110,8 @@ CREATE TABLE IF NOT EXISTS "social_links" (
 	"url" text NOT NULL,
 	"label" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "social_links_profile_id_url_unique" UNIQUE("profile_id", "url")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "media" (

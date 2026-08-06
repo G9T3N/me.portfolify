@@ -25,5 +25,16 @@ const createClient = () => {
   return drizzle(queryClient, { schema });
 };
 
-export const db = createClient();
-export type DbClient = typeof db;
+// Lazy initialization: db is only created on first property access
+let _db: ReturnType<typeof createClient> | null = null;
+
+export const db = new Proxy({} as ReturnType<typeof createClient>, {
+  get(_target, prop, _receiver) {
+    if (!_db) {
+      _db = createClient();
+    }
+    return Reflect.get(_db, prop, _db);
+  },
+});
+
+export type DbClient = ReturnType<typeof createClient>;
