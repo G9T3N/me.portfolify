@@ -14,12 +14,20 @@ export const skillTable = pgTable("skills", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const experienceSkillsTable = pgTable("experience_skills", {
-  experienceId: uuid("experience_id").notNull().references(() => experienceTable.id, { onDelete: "cascade" }),
-  skillId: uuid("skill_id").notNull().references(() => skillTable.id, { onDelete: "cascade" }),
-}, (t) => ({
-  pk: primaryKey({ columns: [t.experienceId, t.skillId] }),
-}));
+export const experienceSkillsTable = pgTable(
+  "experience_skills",
+  {
+    experienceId: uuid("experience_id")
+      .notNull()
+      .references(() => experienceTable.id, { onDelete: "cascade" }),
+    skillId: uuid("skill_id")
+      .notNull()
+      .references(() => skillTable.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.experienceId, t.skillId] }),
+  }),
+);
 
 export const experienceRelations = relations(experienceTable, ({ many }) => ({
   experienceSkills: many(experienceSkillsTable),

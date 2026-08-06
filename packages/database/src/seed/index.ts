@@ -11,15 +11,18 @@ async function seed() {
   const existingProfiles = await db.select().from(profileTable).limit(1);
   let profileId = existingProfiles[0]?.id;
   if (!profileId) {
-    const [newProfile] = await db.insert(profileTable).values({
-      name: "John Doe",
-      headline: "Principal Software Engineer",
-      biography: "Passionate about building scalable systems and elegant user interfaces.",
-      location: "San Francisco, CA",
-      timezone: "America/Los_Angeles",
-      availability: "open",
-      contactEmail: "john.doe@example.com",
-    }).returning();
+    const [newProfile] = await db
+      .insert(profileTable)
+      .values({
+        name: "John Doe",
+        headline: "Principal Software Engineer",
+        biography: "Passionate about building scalable systems and elegant user interfaces.",
+        location: "San Francisco, CA",
+        timezone: "America/Los_Angeles",
+        availability: "open",
+        contactEmail: "john.doe@example.com",
+      })
+      .returning();
     profileId = newProfile.id;
   }
 
@@ -30,12 +33,16 @@ async function seed() {
     { platform: "linkedin", url: "https://linkedin.com/in/johndoe", label: "LinkedIn" },
   ];
   for (const social of socials) {
-    await db.insert(socialLinkTable)
+    await db
+      .insert(socialLinkTable)
       .values({ profileId, ...social })
       .onConflictDoNothing(); // Depends on a unique constraint, but without it we must select
 
     // Without unique constraint on URL, we manually check:
-    const existing = await db.select().from(socialLinkTable).where(eq(socialLinkTable.url, social.url));
+    const existing = await db
+      .select()
+      .from(socialLinkTable)
+      .where(eq(socialLinkTable.url, social.url));
     if (existing.length === 0) {
       await db.insert(socialLinkTable).values({ profileId, ...social });
     }
@@ -47,15 +54,16 @@ async function seed() {
     { name: "TypeScript", slug: "typescript" },
     { name: "React", slug: "react" },
     { name: "PostgreSQL", slug: "postgresql" },
-    { name: "Node.js", slug: "nodejs" }
+    { name: "Node.js", slug: "nodejs" },
   ];
   const techIds: Record<string, string> = {};
   for (const tech of techs) {
-    const [upserted] = await db.insert(technologyTable)
+    const [upserted] = await db
+      .insert(technologyTable)
       .values(tech)
       .onConflictDoUpdate({
         target: technologyTable.slug,
-        set: { name: tech.name }
+        set: { name: tech.name },
       })
       .returning();
     techIds[upserted.slug] = upserted.id;
@@ -68,7 +76,8 @@ async function seed() {
       title: "MRERR Platform",
       slug: "mrerr-platform",
       summary: "A modern, high-performance portfolio and blog platform.",
-      description: "Built with React Router v7, Drizzle, and ArkType. Features full SSR and static generation capabilities.",
+      description:
+        "Built with React Router v7, Drizzle, and ArkType. Features full SSR and static generation capabilities.",
       status: "published",
       isPublished: true,
       featured: true,
@@ -78,15 +87,17 @@ async function seed() {
       title: "Open Source AI Agent",
       slug: "os-ai-agent",
       summary: "An autonomous agent that helps developers refactor code.",
-      description: "Leveraging LLMs to understand complex codebases and suggest architectural improvements.",
+      description:
+        "Leveraging LLMs to understand complex codebases and suggest architectural improvements.",
       status: "draft",
       isPublished: false,
       featured: false,
-    }
+    },
   ];
 
   for (const proj of projects) {
-    const [upsertedProj] = await db.insert(projectTable)
+    const [upsertedProj] = await db
+      .insert(projectTable)
       .values(proj)
       .onConflictDoUpdate({
         target: projectTable.slug,
@@ -97,13 +108,14 @@ async function seed() {
           status: proj.status,
           isPublished: proj.isPublished,
           featured: proj.featured,
-        }
+        },
       })
       .returning();
 
     if (upsertedProj.slug === "mrerr-platform") {
       // Safely link technologies, ignoring duplicates due to new PK constraint
-      await db.insert(projectTechnologiesTable)
+      await db
+        .insert(projectTechnologiesTable)
         .values([
           { projectId: upsertedProj.id, technologyId: techIds["typescript"] },
           { projectId: upsertedProj.id, technologyId: techIds["react"] },

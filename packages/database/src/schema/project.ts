@@ -25,12 +25,20 @@ export const technologyTable = pgTable("technologies", {
   slug: text("slug").notNull().unique(),
 });
 
-export const projectTechnologiesTable = pgTable("project_technologies", {
-  projectId: uuid("project_id").notNull().references(() => projectTable.id, { onDelete: "cascade" }),
-  technologyId: uuid("technology_id").notNull().references(() => technologyTable.id, { onDelete: "cascade" }),
-}, (t) => ({
-  pk: primaryKey({ columns: [t.projectId, t.technologyId] }),
-}));
+export const projectTechnologiesTable = pgTable(
+  "project_technologies",
+  {
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projectTable.id, { onDelete: "cascade" }),
+    technologyId: uuid("technology_id")
+      .notNull()
+      .references(() => technologyTable.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.projectId, t.technologyId] }),
+  }),
+);
 
 export const projectRelations = relations(projectTable, ({ many }) => ({
   projectTechnologies: many(projectTechnologiesTable),

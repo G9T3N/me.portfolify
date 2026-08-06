@@ -6,12 +6,15 @@ import { PublishableRepository } from "./base";
 import { NotFoundError, ValidationFailureError, handlePostgresError } from "./errors";
 import { articleSchema } from "@mrerr/domain/src/article/schema";
 
-export class ArticleRepository implements PublishableRepository<Article.Article, Omit<Article.Article, 'id' | 'createdAt' | 'updatedAt'>, Partial<Omit<Article.Article, 'id' | 'createdAt' | 'updatedAt'>>> {
-
+export class ArticleRepository implements PublishableRepository<
+  Article.Article,
+  Omit<Article.Article, "id" | "createdAt" | "updatedAt">,
+  Partial<Omit<Article.Article, "id" | "createdAt" | "updatedAt">>
+> {
   private validate(data: unknown): Article.Article {
     const result = articleSchema(data);
     if (result instanceof Error) {
-        throw new ValidationFailureError("Invalid article data", result.message);
+      throw new ValidationFailureError("Invalid article data", result.message);
     }
     return result as Article.Article;
   }
@@ -19,7 +22,7 @@ export class ArticleRepository implements PublishableRepository<Article.Article,
   async find(): Promise<Article.Article[]> {
     try {
       const rows = await db.select().from(articleTable);
-      return rows.map(r => this.validate(r));
+      return rows.map((r) => this.validate(r));
     } catch (e) {
       handlePostgresError(e, "Article");
     }
@@ -32,7 +35,7 @@ export class ArticleRepository implements PublishableRepository<Article.Article,
         query = query.where(eq(articleTable.isPublished, true)) as any;
       }
       const rows = await query;
-      return rows.map(r => this.validate(r));
+      return rows.map((r) => this.validate(r));
     } catch (e) {
       handlePostgresError(e, "Article");
     }
@@ -48,17 +51,19 @@ export class ArticleRepository implements PublishableRepository<Article.Article,
     }
   }
 
-  async create(data: Omit<Article.Article, 'id' | 'createdAt' | 'updatedAt'>): Promise<Article.Article> {
+  async create(
+    data: Omit<Article.Article, "id" | "createdAt" | "updatedAt">,
+  ): Promise<Article.Article> {
     try {
       const insertData = {
-          title: data.title,
-          slug: data.slug,
-          excerpt: data.excerpt,
-          content: data.content,
-          status: data.status,
-          coverImage: data.coverImage ?? null,
-          isPublished: data.isPublished ?? false,
-          publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
+        title: data.title,
+        slug: data.slug,
+        excerpt: data.excerpt,
+        content: data.content,
+        status: data.status,
+        coverImage: data.coverImage ?? null,
+        isPublished: data.isPublished ?? false,
+        publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
       };
 
       return await db.transaction(async (tx) => {
@@ -70,11 +75,15 @@ export class ArticleRepository implements PublishableRepository<Article.Article,
     }
   }
 
-  async update(id: string, data: Partial<Omit<Article.Article, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Article.Article> {
+  async update(
+    id: string,
+    data: Partial<Omit<Article.Article, "id" | "createdAt" | "updatedAt">>,
+  ): Promise<Article.Article> {
     try {
       const updateData = { ...data, updatedAt: new Date() } as any;
 
-      const [row] = await db.update(articleTable)
+      const [row] = await db
+        .update(articleTable)
         .set(updateData)
         .where(eq(articleTable.id, id))
         .returning();
@@ -99,7 +108,8 @@ export class ArticleRepository implements PublishableRepository<Article.Article,
 
   async publish(id: string): Promise<Article.Article> {
     try {
-      const [row] = await db.update(articleTable)
+      const [row] = await db
+        .update(articleTable)
         .set({ isPublished: true, publishedAt: new Date(), updatedAt: new Date() })
         .where(eq(articleTable.id, id))
         .returning();
@@ -114,7 +124,8 @@ export class ArticleRepository implements PublishableRepository<Article.Article,
 
   async archive(id: string): Promise<Article.Article> {
     try {
-      const [row] = await db.update(articleTable)
+      const [row] = await db
+        .update(articleTable)
         .set({ isPublished: false, updatedAt: new Date() })
         .where(eq(articleTable.id, id))
         .returning();
@@ -133,7 +144,7 @@ export class ArticleRepository implements PublishableRepository<Article.Article,
         await tx.delete(articleTagsTable).where(eq(articleTagsTable.articleId, articleId));
 
         if (tagIds.length > 0) {
-          const values = tagIds.map(id => ({ articleId, tagId: id }));
+          const values = tagIds.map((id) => ({ articleId, tagId: id }));
           await tx.insert(articleTagsTable).values(values);
         }
       });

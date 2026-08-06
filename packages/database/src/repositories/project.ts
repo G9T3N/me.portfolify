@@ -6,12 +6,15 @@ import { PublishableRepository } from "./base";
 import { NotFoundError, ValidationFailureError, handlePostgresError } from "./errors";
 import { projectSchema } from "@mrerr/domain/src/project/schema";
 
-export class ProjectRepository implements PublishableRepository<Project.Project, Omit<Project.Project, 'id' | 'createdAt' | 'updatedAt'>, Partial<Omit<Project.Project, 'id' | 'createdAt' | 'updatedAt'>>> {
-
+export class ProjectRepository implements PublishableRepository<
+  Project.Project,
+  Omit<Project.Project, "id" | "createdAt" | "updatedAt">,
+  Partial<Omit<Project.Project, "id" | "createdAt" | "updatedAt">>
+> {
   private validate(data: unknown): Project.Project {
     const result = projectSchema(data);
     if (result instanceof Error) {
-        throw new ValidationFailureError("Invalid project data", result.message);
+      throw new ValidationFailureError("Invalid project data", result.message);
     }
     return result as Project.Project;
   }
@@ -19,7 +22,7 @@ export class ProjectRepository implements PublishableRepository<Project.Project,
   async find(): Promise<Project.Project[]> {
     try {
       const rows = await db.select().from(projectTable);
-      return rows.map(r => this.validate(r));
+      return rows.map((r) => this.validate(r));
     } catch (e) {
       handlePostgresError(e, "Project");
     }
@@ -32,7 +35,7 @@ export class ProjectRepository implements PublishableRepository<Project.Project,
         query = query.where(eq(projectTable.isPublished, true)) as any;
       }
       const rows = await query;
-      return rows.map(r => this.validate(r));
+      return rows.map((r) => this.validate(r));
     } catch (e) {
       handlePostgresError(e, "Project");
     }
@@ -48,20 +51,22 @@ export class ProjectRepository implements PublishableRepository<Project.Project,
     }
   }
 
-  async create(data: Omit<Project.Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project.Project> {
+  async create(
+    data: Omit<Project.Project, "id" | "createdAt" | "updatedAt">,
+  ): Promise<Project.Project> {
     try {
       const insertData = {
-          title: data.title,
-          slug: data.slug,
-          summary: data.summary,
-          description: data.description,
-          status: data.status,
-          featured: data.featured,
-          images: (data.images || []) as string[],
-          repository: data.repository ?? null,
-          demo: data.demo ?? null,
-          isPublished: data.isPublished ?? false,
-          publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
+        title: data.title,
+        slug: data.slug,
+        summary: data.summary,
+        description: data.description,
+        status: data.status,
+        featured: data.featured,
+        images: (data.images || []) as string[],
+        repository: data.repository ?? null,
+        demo: data.demo ?? null,
+        isPublished: data.isPublished ?? false,
+        publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
       };
 
       return await db.transaction(async (tx) => {
@@ -73,11 +78,15 @@ export class ProjectRepository implements PublishableRepository<Project.Project,
     }
   }
 
-  async update(id: string, data: Partial<Omit<Project.Project, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Project.Project> {
+  async update(
+    id: string,
+    data: Partial<Omit<Project.Project, "id" | "createdAt" | "updatedAt">>,
+  ): Promise<Project.Project> {
     try {
       const updateData = { ...data, updatedAt: new Date() } as any;
 
-      const [row] = await db.update(projectTable)
+      const [row] = await db
+        .update(projectTable)
         .set(updateData)
         .where(eq(projectTable.id, id))
         .returning();
@@ -102,7 +111,8 @@ export class ProjectRepository implements PublishableRepository<Project.Project,
 
   async publish(id: string): Promise<Project.Project> {
     try {
-      const [row] = await db.update(projectTable)
+      const [row] = await db
+        .update(projectTable)
         .set({ isPublished: true, publishedAt: new Date(), updatedAt: new Date() })
         .where(eq(projectTable.id, id))
         .returning();
@@ -117,7 +127,8 @@ export class ProjectRepository implements PublishableRepository<Project.Project,
 
   async archive(id: string): Promise<Project.Project> {
     try {
-      const [row] = await db.update(projectTable)
+      const [row] = await db
+        .update(projectTable)
         .set({ isPublished: false, updatedAt: new Date() })
         .where(eq(projectTable.id, id))
         .returning();
@@ -134,10 +145,12 @@ export class ProjectRepository implements PublishableRepository<Project.Project,
   async setTechnologies(projectId: string, technologyIds: string[]): Promise<void> {
     try {
       await db.transaction(async (tx) => {
-        await tx.delete(projectTechnologiesTable).where(eq(projectTechnologiesTable.projectId, projectId));
+        await tx
+          .delete(projectTechnologiesTable)
+          .where(eq(projectTechnologiesTable.projectId, projectId));
 
         if (technologyIds.length > 0) {
-          const values = technologyIds.map(id => ({ projectId, technologyId: id }));
+          const values = technologyIds.map((id) => ({ projectId, technologyId: id }));
           await tx.insert(projectTechnologiesTable).values(values);
         }
       });

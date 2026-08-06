@@ -21,7 +21,7 @@ export async function getProjectWithTechnologies(slug: string) {
 
   const project = rows[0].project;
   const technologies = rows
-    .map(r => r.technology)
+    .map((r) => r.technology)
     .filter((t): t is NonNullable<typeof t> => t !== null);
 
   return {

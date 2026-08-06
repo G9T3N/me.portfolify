@@ -15,12 +15,20 @@ export const mediaTable = pgTable("media", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const projectMediaTable = pgTable("project_media", {
-  projectId: uuid("project_id").notNull().references(() => projectTable.id, { onDelete: "cascade" }),
-  mediaId: uuid("media_id").notNull().references(() => mediaTable.id, { onDelete: "cascade" }),
-}, (t) => ({
-  pk: primaryKey({ columns: [t.projectId, t.mediaId] }),
-}));
+export const projectMediaTable = pgTable(
+  "project_media",
+  {
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projectTable.id, { onDelete: "cascade" }),
+    mediaId: uuid("media_id")
+      .notNull()
+      .references(() => mediaTable.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.projectId, t.mediaId] }),
+  }),
+);
 
 export const projectMediaRelations = relations(projectMediaTable, ({ one }) => ({
   project: one(projectTable, {
