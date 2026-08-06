@@ -94,6 +94,10 @@ export class RelationshipReferenceError extends RepositoryError {
   }
 }
 
+export function isArkErrors(err: unknown): err is Error & { errors: unknown[] } {
+  return err instanceof Error && "errors" in err && Array.isArray((err as any).errors);
+}
+
 export function mapValidationError(
   err: unknown,
   boundary: "domain-to-database" | "database-to-domain",
@@ -101,7 +105,24 @@ export function mapValidationError(
   operation?: string,
 ): ValidationFailureError {
   const issues: ValidationIssue[] = [];
-  if (err && typeof err === "object" && "issues" in err && Array.isArray((err as any).issues)) {
+
+  // Check for ArkErrors array first
+  if (isArkErrors(err)) {
+    for (const arkError of err.errors) {
+      if (arkError && typeof arkError === "object") {
+        const issue = arkError as any;
+        issues.push({
+          path: issue.path || [],
+          message: issue.message || String(arkError),
+        });
+      } else {
+        issues.push({
+          path: [],
+          message: String(arkError),
+        });
+      }
+    }
+  } else if (err && typeof err === "object" && "issues" in err && Array.isArray((err as any).issues)) {
     for (const issue of (err as any).issues) {
       issues.push({
         path: issue.path || [],
