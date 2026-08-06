@@ -1,8 +1,8 @@
 import { db } from "../connection";
 import { projectTable, technologyTable, projectTechnologiesTable } from "../schema/project";
+import { articleTable, tagTable, articleTagsTable } from "../schema/article";
 import { profileTable } from "../schema/profile";
 import { socialLinkTable } from "../schema/social";
-import { eq } from "drizzle-orm";
 
 async function seed() {
   console.log("🌱 Starting database seed...");
@@ -26,7 +26,7 @@ async function seed() {
     profileId = newProfile.id;
   }
 
-  // Idempotent Social Links
+  // Idempotent Social Links (FIXED: removed the duplicate unconditional insert statement)
   console.log("Seeding social links...");
   const socials = [
     { platform: "github", url: "https://github.com/johndoe", label: "GitHub" },
@@ -120,6 +120,76 @@ async function seed() {
           { projectId: upsertedProj.id, technologyId: techIds["typescript"] },
           { projectId: upsertedProj.id, technologyId: techIds["react"] },
           { projectId: upsertedProj.id, technologyId: techIds["postgresql"] },
+        ])
+        .onConflictDoNothing();
+    }
+  }
+
+  // Idempotent Tags
+  console.log("Seeding tags...");
+  const tags = [
+    { name: "Software Architecture", slug: "architecture" },
+    { name: "Web Development", slug: "web-development" },
+  ];
+  const tagIds: Record<string, string> = {};
+  for (const tag of tags) {
+    const [upserted] = await db
+      .insert(tagTable)
+      .values(tag)
+      .onConflictDoUpdate({
+        target: tagTable.slug,
+        set: { name: tag.name },
+      })
+      .returning();
+    tagIds[upserted.slug] = upserted.id;
+  }
+
+  // Idempotent Articles
+  console.log("Seeding articles...");
+  const articles = [
+    {
+      title: "Building Scalable Systems",
+      slug: "building-scalable-systems",
+      excerpt: "A deep dive into clean architecture and reliable persistence.",
+      content:
+        "This article discusses modular monorepos, domain boundaries, and strict validation using ArkType.",
+      status: "published",
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+    {
+      title: "Designing Robust APIs",
+      slug: "designing-robust-apis",
+      excerpt: "Best practices for writing type-safe APIs.",
+      content:
+        "Learn how to establish robust runtime validation boundaries using TypeScript and schemas.",
+      status: "draft",
+      isPublished: false,
+    },
+  ];
+
+  for (const art of articles) {
+    const [upsertedArt] = await db
+      .insert(articleTable)
+      .values(art)
+      .onConflictDoUpdate({
+        target: articleTable.slug,
+        set: {
+          title: art.title,
+          excerpt: art.excerpt,
+          content: art.content,
+          status: art.status,
+          isPublished: art.isPublished,
+        },
+      })
+      .returning();
+
+    if (upsertedArt.slug === "building-scalable-systems") {
+      await db
+        .insert(articleTagsTable)
+        .values([
+          { articleId: upsertedArt.id, tagId: tagIds["architecture"] },
+          { articleId: upsertedArt.id, tagId: tagIds["web-development"] },
         ])
         .onConflictDoNothing();
     }

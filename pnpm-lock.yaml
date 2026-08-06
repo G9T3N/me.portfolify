@@ -311,6 +311,9 @@ importers:
       "@mrerr/env":
         specifier: workspace:*
         version: link:../env
+      arktype:
+        specifier: ^2.2.2
+        version: 2.2.2
       drizzle-orm:
         specifier: ^0.30.10
         version: 0.30.10(@types/react@18.3.31)(better-sqlite3@11.10.0)(kysely@0.27.6)(mysql2@3.22.5(@types/node@26.1.0))(pg@8.22.0)(postgres@3.4.9)(react@19.2.7)
