@@ -9,7 +9,6 @@ import {
   RelationshipReferenceError,
   handlePostgresError,
   mapValidationError,
-  isArkErrors,
 } from "./errors";
 import {
   articleSchema,
@@ -28,18 +27,13 @@ export class ArticleRepository implements PublishableRepository<
     operation?: string,
   ): Article.Article {
     const result = articleSchema(data);
-    if (isArkErrors(result)) {
-      throw mapValidationError(result, boundary, "Article", operation);
-    }
     if (result instanceof Error) {
       throw mapValidationError(result, boundary, "Article", operation);
     }
     return result as Article.Article;
   }
 
-  private async enrichArticlesWithTags(
-    articles: (typeof articleTable.$inferSelect)[],
-  ): Promise<Article.Article[]> {
+  private async enrichArticlesWithTags(articles: any[]): Promise<Article.Article[]> {
     if (articles.length === 0) return [];
     const articleIds = articles.map((a) => a.id);
 
@@ -72,9 +66,6 @@ export class ArticleRepository implements PublishableRepository<
       const rows = await db.select().from(articleTable);
       return await this.enrichArticlesWithTags(rows);
     } catch (e) {
-      if (e instanceof ValidationFailureError) {
-        throw e;
-      }
       handlePostgresError(e, "Article");
     }
   }
@@ -88,9 +79,6 @@ export class ArticleRepository implements PublishableRepository<
       const rows = await query;
       return await this.enrichArticlesWithTags(rows);
     } catch (e) {
-      if (e instanceof ValidationFailureError) {
-        throw e;
-      }
       handlePostgresError(e, "Article");
     }
   }
@@ -102,9 +90,6 @@ export class ArticleRepository implements PublishableRepository<
       const [enriched] = await this.enrichArticlesWithTags(rows);
       return enriched;
     } catch (e) {
-      if (e instanceof ValidationFailureError) {
-        throw e;
-      }
       handlePostgresError(e, "Article");
     }
   }
@@ -116,18 +101,12 @@ export class ArticleRepository implements PublishableRepository<
       const [enriched] = await this.enrichArticlesWithTags(rows);
       return enriched;
     } catch (e) {
-      if (e instanceof ValidationFailureError) {
-        throw e;
-      }
       handlePostgresError(e, "Article");
     }
   }
 
   async create(data: Article.CreateArticleInput): Promise<Article.Article> {
     const validatedInput = createArticleInputSchema(data);
-    if (isArkErrors(validatedInput)) {
-      throw mapValidationError(validatedInput, "domain-to-database", "Article", "create");
-    }
     if (validatedInput instanceof Error) {
       throw mapValidationError(validatedInput, "domain-to-database", "Article", "create");
     }
@@ -206,9 +185,6 @@ export class ArticleRepository implements PublishableRepository<
 
   async update(id: string, data: Article.UpdateArticleInput): Promise<Article.Article> {
     const validatedInput = updateArticleInputSchema(data);
-    if (isArkErrors(validatedInput)) {
-      throw mapValidationError(validatedInput, "domain-to-database", "Article", "update");
-    }
     if (validatedInput instanceof Error) {
       throw mapValidationError(validatedInput, "domain-to-database", "Article", "update");
     }
@@ -254,9 +230,6 @@ export class ArticleRepository implements PublishableRepository<
         mergedCandidate.tags = targetTagSlugs;
 
         const validatedEntity = articleSchema(mergedCandidate);
-        if (isArkErrors(validatedEntity)) {
-          throw mapValidationError(validatedEntity, "database-to-domain", "Article", "update");
-        }
         if (validatedEntity instanceof Error) {
           throw mapValidationError(validatedEntity, "database-to-domain", "Article", "update");
         }

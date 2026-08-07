@@ -8,3 +8,4 @@ export * from "./media";
 export * from "./navigation";
 export * from "./seo";
 export * from "./settings";
+export * from "./auth";

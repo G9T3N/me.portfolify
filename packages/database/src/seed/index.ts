@@ -3,6 +3,7 @@ import { projectTable, technologyTable, projectTechnologiesTable } from "../sche
 import { articleTable, tagTable, articleTagsTable } from "../schema/article";
 import { profileTable } from "../schema/profile";
 import { socialLinkTable } from "../schema/social";
+import { eq } from "drizzle-orm";
 
 async function seed() {
   console.log("🌱 Starting database seed...");
@@ -33,10 +34,13 @@ async function seed() {
     { platform: "linkedin", url: "https://linkedin.com/in/johndoe", label: "LinkedIn" },
   ];
   for (const social of socials) {
-    await db
-      .insert(socialLinkTable)
-      .values({ profileId, ...social })
-      .onConflictDoNothing();
+    const existing = await db
+      .select()
+      .from(socialLinkTable)
+      .where(eq(socialLinkTable.url, social.url));
+    if (existing.length === 0) {
+      await db.insert(socialLinkTable).values({ profileId, ...social });
+    }
   }
 
   // Idempotent Technologies

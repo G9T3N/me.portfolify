@@ -9,7 +9,6 @@ import {
   RelationshipReferenceError,
   handlePostgresError,
   mapValidationError,
-  isArkErrors,
 } from "./errors";
 import {
   projectSchema,
@@ -28,18 +27,13 @@ export class ProjectRepository implements PublishableRepository<
     operation?: string,
   ): Project.Project {
     const result = projectSchema(data);
-    if (isArkErrors(result)) {
-      throw mapValidationError(result, boundary, "Project", operation);
-    }
     if (result instanceof Error) {
       throw mapValidationError(result, boundary, "Project", operation);
     }
     return result as Project.Project;
   }
 
-  private async enrichProjectsWithTechnologies(
-    projects: (typeof projectTable.$inferSelect)[],
-  ): Promise<Project.Project[]> {
+  private async enrichProjectsWithTechnologies(projects: any[]): Promise<Project.Project[]> {
     if (projects.length === 0) return [];
     const projectIds = projects.map((p) => p.id);
 
@@ -72,9 +66,6 @@ export class ProjectRepository implements PublishableRepository<
       const rows = await db.select().from(projectTable);
       return await this.enrichProjectsWithTechnologies(rows);
     } catch (e) {
-      if (e instanceof ValidationFailureError) {
-        throw e;
-      }
       handlePostgresError(e, "Project");
     }
   }
@@ -88,9 +79,6 @@ export class ProjectRepository implements PublishableRepository<
       const rows = await query;
       return await this.enrichProjectsWithTechnologies(rows);
     } catch (e) {
-      if (e instanceof ValidationFailureError) {
-        throw e;
-      }
       handlePostgresError(e, "Project");
     }
   }
@@ -102,9 +90,6 @@ export class ProjectRepository implements PublishableRepository<
       const [enriched] = await this.enrichProjectsWithTechnologies(rows);
       return enriched;
     } catch (e) {
-      if (e instanceof ValidationFailureError) {
-        throw e;
-      }
       handlePostgresError(e, "Project");
     }
   }
@@ -116,18 +101,12 @@ export class ProjectRepository implements PublishableRepository<
       const [enriched] = await this.enrichProjectsWithTechnologies(rows);
       return enriched;
     } catch (e) {
-      if (e instanceof ValidationFailureError) {
-        throw e;
-      }
       handlePostgresError(e, "Project");
     }
   }
 
   async create(data: Project.CreateProjectInput): Promise<Project.Project> {
     const validatedInput = createProjectInputSchema(data);
-    if (isArkErrors(validatedInput)) {
-      throw mapValidationError(validatedInput, "domain-to-database", "Project", "create");
-    }
     if (validatedInput instanceof Error) {
       throw mapValidationError(validatedInput, "domain-to-database", "Project", "create");
     }
@@ -209,9 +188,6 @@ export class ProjectRepository implements PublishableRepository<
 
   async update(id: string, data: Project.UpdateProjectInput): Promise<Project.Project> {
     const validatedInput = updateProjectInputSchema(data);
-    if (isArkErrors(validatedInput)) {
-      throw mapValidationError(validatedInput, "domain-to-database", "Project", "update");
-    }
     if (validatedInput instanceof Error) {
       throw mapValidationError(validatedInput, "domain-to-database", "Project", "update");
     }
@@ -257,9 +233,6 @@ export class ProjectRepository implements PublishableRepository<
         mergedCandidate.technologies = targetTechSlugs;
 
         const validatedEntity = projectSchema(mergedCandidate);
-        if (isArkErrors(validatedEntity)) {
-          throw mapValidationError(validatedEntity, "database-to-domain", "Project", "update");
-        }
         if (validatedEntity instanceof Error) {
           throw mapValidationError(validatedEntity, "database-to-domain", "Project", "update");
         }

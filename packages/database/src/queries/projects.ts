@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { type } from "arktype";
 import { Uuid, Slug, Url, Markdown, ImageUrl } from "@mrerr/domain/src/core";
 import { PROJECT_STATUSES } from "@mrerr/domain/src/project/constants";
-import { mapValidationError, isArkErrors } from "../repositories/errors";
+import { mapValidationError } from "../repositories/errors";
 
 export const technologySummarySchema = type({
   id: Uuid,
@@ -64,14 +64,6 @@ export async function getProjectWithTechnologies(
   };
 
   const validated = projectWithTechnologiesSchema(candidate);
-  if (isArkErrors(validated)) {
-    throw mapValidationError(
-      validated,
-      "database-to-domain",
-      "ProjectWithTechnologies",
-      "getProjectWithTechnologies",
-    );
-  }
   if (validated instanceof Error) {
     throw mapValidationError(
       validated,
