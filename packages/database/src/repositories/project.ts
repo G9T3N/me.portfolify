@@ -1,6 +1,6 @@
 import { db } from "../connection";
-import { projectTable, projectTechnologiesTable, technologyTable } from "../schema/project";
-import { eq, inArray } from "drizzle-orm";
+import { projectTable, projectTechnologiesTable } from "../schema/project";
+import { eq } from "drizzle-orm";
 import { Project } from "@mrerr/domain";
 import { PublishableRepository } from "./base";
 import {
@@ -18,8 +18,8 @@ import {
 
 export class ProjectRepository implements PublishableRepository<
   Project.Project,
-  Project.CreateProjectInput,
-  Project.UpdateProjectInput
+  Omit<Project.Project, "id" | "createdAt" | "updatedAt">,
+  Partial<Omit<Project.Project, "id" | "createdAt" | "updatedAt">>
 > {
   private validate(
     data: unknown,
@@ -28,7 +28,7 @@ export class ProjectRepository implements PublishableRepository<
   ): Project.Project {
     const result = projectSchema(data);
     if (result instanceof Error) {
-      throw mapValidationError(result, boundary, "Project", operation);
+      throw mapValidationError(result, "database-to-domain", "Project");
     }
     return result as Project.Project;
   }
@@ -64,7 +64,7 @@ export class ProjectRepository implements PublishableRepository<
   async find(): Promise<Project.Project[]> {
     try {
       const rows = await db.select().from(projectTable);
-      return await this.enrichProjectsWithTechnologies(rows);
+      return rows.map((r) => this.validate(r));
     } catch (e) {
       handlePostgresError(e, "Project");
     }
@@ -77,7 +77,7 @@ export class ProjectRepository implements PublishableRepository<
         query = query.where(eq(projectTable.isPublished, true)) as any;
       }
       const rows = await query;
-      return await this.enrichProjectsWithTechnologies(rows);
+      return rows.map((r) => this.validate(r));
     } catch (e) {
       handlePostgresError(e, "Project");
     }
@@ -87,14 +87,15 @@ export class ProjectRepository implements PublishableRepository<
     try {
       const rows = await db.select().from(projectTable).where(eq(projectTable.id, id)).limit(1);
       if (rows.length === 0) return null;
-      const [enriched] = await this.enrichProjectsWithTechnologies(rows);
-      return enriched;
+      return this.validate(rows[0]);
     } catch (e) {
       handlePostgresError(e, "Project");
     }
   }
 
-  async findBySlug(slug: string): Promise<Project.Project | null> {
+  async create(
+    data: Omit<Project.Project, "id" | "createdAt" | "updatedAt">,
+  ): Promise<Project.Project> {
     try {
       const rows = await db.select().from(projectTable).where(eq(projectTable.slug, slug)).limit(1);
       if (rows.length === 0) return null;
@@ -112,76 +113,11 @@ export class ProjectRepository implements PublishableRepository<
     }
     const input = validatedInput as Project.CreateProjectInput;
 
-    try {
       return await db.transaction(async (tx) => {
-        const techSlugs = Array.from(new Set((input.technologies || []).map((s) => s.trim())));
-        let techIds: string[] = [];
-
-        if (techSlugs.length > 0) {
-          for (const slug of techSlugs) {
-            if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-              throw new RelationshipReferenceError({
-                entity: "Project",
-                relationship: "technologies",
-                missing: [slug],
-              });
-            }
-          }
-
-          const matchedTechs = await tx
-            .select({ id: technologyTable.id, slug: technologyTable.slug })
-            .from(technologyTable)
-            .where(inArray(technologyTable.slug, techSlugs));
-
-          const matchedSlugs = matchedTechs.map((t) => t.slug);
-          const missingSlugs = techSlugs.filter((s) => !matchedSlugs.includes(s));
-
-          if (missingSlugs.length > 0) {
-            throw new RelationshipReferenceError({
-              entity: "Project",
-              relationship: "technologies",
-              missing: missingSlugs,
-            });
-          }
-
-          techIds = matchedTechs.map((t) => t.id);
-        }
-
-        const insertData = {
-          title: input.title,
-          slug: input.slug,
-          summary: input.summary,
-          description: input.description,
-          status: input.status,
-          featured: input.featured ?? false,
-          images: input.images || [],
-          repository: input.repository ?? null,
-          demo: input.demo ?? null,
-          isPublished: input.isPublished ?? false,
-          publishedAt: input.publishedAt ?? null,
-        };
-
         const [row] = await tx.insert(projectTable).values(insertData).returning();
-
-        if (techIds.length > 0) {
-          const relationValues = techIds.map((tId) => ({
-            projectId: row.id,
-            technologyId: tId,
-          }));
-          await tx.insert(projectTechnologiesTable).values(relationValues);
-        }
-
-        const persistedCandidate = {
-          ...row,
-          technologies: techSlugs,
-        };
-
-        return this.validate(persistedCandidate, "database-to-domain", "create");
+        return this.validate(row);
       });
     } catch (e) {
-      if (e instanceof RelationshipReferenceError || e instanceof ValidationFailureError) {
-        throw e;
-      }
       handlePostgresError(e, "Project");
     }
   }
@@ -285,51 +221,24 @@ export class ProjectRepository implements PublishableRepository<
           updatedAt: mergedCandidate.updatedAt,
         };
 
-        const [row] = await tx
-          .update(projectTable)
-          .set(updatePayload)
-          .where(eq(projectTable.id, id))
-          .returning();
+      const [row] = await db
+        .update(projectTable)
+        .set(updateData)
+        .where(eq(projectTable.id, id))
+        .returning();
 
-        if (input.technologies !== undefined) {
-          await tx
-            .delete(projectTechnologiesTable)
-            .where(eq(projectTechnologiesTable.projectId, id));
-          if (techIds.length > 0) {
-            const relationValues = techIds.map((tId) => ({
-              projectId: id,
-              technologyId: tId,
-            }));
-            await tx.insert(projectTechnologiesTable).values(relationValues);
-          }
-        }
-
-        const finalResult = {
-          ...row,
-          technologies: targetTechSlugs,
-        };
-
-        return this.validate(finalResult, "database-to-domain", "update");
-      });
+      if (!row) throw new NotFoundError("Project", id);
+      return this.validate(row);
     } catch (e) {
-      if (
-        e instanceof NotFoundError ||
-        e instanceof RelationshipReferenceError ||
-        e instanceof ValidationFailureError
-      ) {
-        throw e;
-      }
+      if (e instanceof NotFoundError) throw e;
       handlePostgresError(e, "Project");
     }
   }
 
   async delete(id: string): Promise<void> {
     try {
-      await db.transaction(async (tx) => {
-        await tx.delete(projectTechnologiesTable).where(eq(projectTechnologiesTable.projectId, id));
-        const [row] = await tx.delete(projectTable).where(eq(projectTable.id, id)).returning();
-        if (!row) throw new NotFoundError("Project", id);
-      });
+      const [row] = await db.delete(projectTable).where(eq(projectTable.id, id)).returning();
+      if (!row) throw new NotFoundError("Project", id);
     } catch (e) {
       if (e instanceof NotFoundError) throw e;
       handlePostgresError(e, "Project");
@@ -345,9 +254,7 @@ export class ProjectRepository implements PublishableRepository<
         .returning();
 
       if (!row) throw new NotFoundError("Project", id);
-
-      const techs = await this.getTechnologiesForProject(id);
-      return this.validate({ ...row, technologies: techs }, "database-to-domain", "publish");
+      return this.validate(row);
     } catch (e) {
       if (e instanceof NotFoundError) throw e;
       handlePostgresError(e, "Project");
@@ -363,25 +270,14 @@ export class ProjectRepository implements PublishableRepository<
         .returning();
 
       if (!row) throw new NotFoundError("Project", id);
-
-      const techs = await this.getTechnologiesForProject(id);
-      return this.validate({ ...row, technologies: techs }, "database-to-domain", "archive");
+      return this.validate(row);
     } catch (e) {
       if (e instanceof NotFoundError) throw e;
       handlePostgresError(e, "Project");
     }
   }
 
-  private async getTechnologiesForProject(projectId: string): Promise<string[]> {
-    const rows = await db
-      .select({ slug: technologyTable.slug })
-      .from(projectTechnologiesTable)
-      .innerJoin(technologyTable, eq(projectTechnologiesTable.technologyId, technologyTable.id))
-      .where(eq(projectTechnologiesTable.projectId, projectId));
-    return rows.map((r) => r.slug);
-  }
-
-  // Backward compatible but transaction-safe relation writer
+  // Example atomic relation mapping
   async setTechnologies(projectId: string, technologyIds: string[]): Promise<void> {
     try {
       await db.transaction(async (tx) => {

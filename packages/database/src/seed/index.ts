@@ -27,7 +27,7 @@ async function seed() {
     profileId = newProfile.id;
   }
 
-  // Idempotent Social Links (FIXED: removed the duplicate unconditional insert statement)
+  // Idempotent Social Links
   console.log("Seeding social links...");
   const socials = [
     { platform: "github", url: "https://github.com/johndoe", label: "GitHub" },
@@ -108,6 +108,7 @@ async function seed() {
       .returning();
 
     if (upsertedProj.slug === "mrerr-platform") {
+      // Safely link technologies, ignoring duplicates due to new PK constraint
       await db
         .insert(projectTechnologiesTable)
         .values([

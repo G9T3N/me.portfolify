@@ -1,9 +1,7 @@
 export class RepositoryError extends Error {
-  public readonly code: string;
   constructor(
     message: string,
-    code = "REPOSITORY_ERROR",
-    public override readonly cause?: unknown,
+    public readonly cause?: unknown,
   ) {
     super(message);
     this.name = "RepositoryError";
@@ -22,13 +20,8 @@ export class NotFoundError extends RepositoryError {
 }
 
 export class DuplicateError extends RepositoryError {
-  constructor(
-    public readonly entityName: string,
-    public readonly field: string,
-    public readonly value?: string,
-    cause?: unknown,
-  ) {
-    super(`${entityName} with ${field} '${value || "unknown"}' already exists`, "DUPLICATE", cause);
+  constructor(entityName: string, field: string, value?: string, cause?: unknown) {
+    super(`${entityName} with ${field} '${value || "unknown"}' already exists`, cause);
     this.name = "DuplicateError";
   }
 }

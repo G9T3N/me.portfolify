@@ -1,6 +1,7 @@
 {
   "extends": "@mrerr/typescript-config/react.json",
   "compilerOptions": {
+    "rootDirs": [".", "./.react-router/types"],
     "types": ["@react-router/node", "vite/client"],
     "paths": {
       "~/*": ["./app/*"]
