@@ -1,2 +1,1 @@
-// Shared schema exports go here
-export {};
+export * from "./schema/index";

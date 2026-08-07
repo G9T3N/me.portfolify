@@ -13,3 +13,27 @@ export const articleSchema = BaseEntity.and(PublishableEntity).and(
     tags: "string[]",
   }),
 );
+
+export const createArticleInputSchema = type({
+  title: "string > 0",
+  slug: Slug,
+  excerpt: "string",
+  content: Markdown,
+  "coverImage?": Url.or("null"),
+  status: type.enumerated(...ARTICLE_STATUSES),
+  tags: "string[]",
+  "isPublished?": "boolean",
+  "publishedAt?": "Date | null",
+});
+
+export const updateArticleInputSchema = type({
+  "title?": "string > 0",
+  "slug?": Slug,
+  "excerpt?": "string",
+  "content?": Markdown,
+  "coverImage?": Url.or("null"),
+  "status?": type.enumerated(...ARTICLE_STATUSES),
+  "tags?": "string[]",
+  "isPublished?": "boolean",
+  "publishedAt?": "Date | null",
+});

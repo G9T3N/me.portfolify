@@ -13,6 +13,7 @@
     "@mrerr/env": "workspace:*",
     "@mrerr/ui": "workspace:*",
     "@mrerr/utils": "workspace:*",
+    "@mrerr/auth": "workspace:*",
     "@react-router/node": "^7.0.0",
     "@react-router/serve": "^7.0.0",
     "isbot": "^5.1.17",

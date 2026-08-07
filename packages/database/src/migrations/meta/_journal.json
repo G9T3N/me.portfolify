@@ -15,6 +15,13 @@
       "when": 1785434181432,
       "tag": "0001_complete_spiral",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786051101287,
+      "tag": "0002_tired_proteus",
+      "breakpoints": true
     }
   ]
 }

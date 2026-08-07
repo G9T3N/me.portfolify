@@ -3,13 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client/auth-client.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
   "dependencies": {
-    "better-auth": "^0.1.0",
+    "better-auth": "1.6.25",
+    "@better-auth/drizzle-adapter": "^1.6.25",
+    "arktype": "^2.2.2",
     "@mrerr/database": "workspace:*",
     "@mrerr/env": "workspace:*"
   },
   "devDependencies": {
     "@mrerr/typescript-config": "workspace:*",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^2.1.8"
   }
 }
